@@ -1,0 +1,849 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ko‘pburchak yuzi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=Unbounded:wght@600;800&display=swap">
+<style>
+/* Layout: three tabs (Nazariya, O‘yin, Yechimlar) on a graph-paper ground; the game keeps a sticky scoreboard of teams 1, 2, 3; every solution carries its own scaled drawing. */
+:root{
+  --bg:#f1f5fb; --grid:rgba(30,64,140,.08); --surface:#ffffff; --surface-2:#e7eefa;
+  --fg:#13203b; --muted:#56637c; --line:#cdd8ea; --ink:#1d4ed8; --warn:#b42318;
+  --t1:#1d4ed8; --t2:#c2410c; --t3:#0f7b55; --on-t:#ffffff;
+  --shadow:0 12px 34px rgba(19,32,59,.22); --scrim:rgba(14,22,40,.55);
+  --display:'Unbounded',system-ui,sans-serif; --body:'Manrope',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1624; --grid:rgba(120,160,255,.08); --surface:#162133; --surface-2:#1d2b44;
+    --fg:#e8eefb; --muted:#9aa8c2; --line:#2b3b58; --ink:#7aa2ff; --warn:#ff8a7a;
+    --t1:#7aa2ff; --t2:#ff9a62; --t3:#4fd1a1; --on-t:#0b1220;
+    --shadow:0 12px 34px rgba(0,0,0,.5); --scrim:rgba(0,0,0,.65); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1624; --grid:rgba(120,160,255,.08); --surface:#162133; --surface-2:#1d2b44;
+  --fg:#e8eefb; --muted:#9aa8c2; --line:#2b3b58; --ink:#7aa2ff; --warn:#ff8a7a;
+  --t1:#7aa2ff; --t2:#ff9a62; --t3:#4fd1a1; --on-t:#0b1220;
+  --shadow:0 12px 34px rgba(0,0,0,.5); --scrim:rgba(0,0,0,.65); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg); color:var(--fg); font-family:var(--body);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px; line-height:1.45;
+}
+body.lock{overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto;padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+h2{text-wrap:balance}
+
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.top h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,6vw,40px);line-height:1.05;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.top p{margin:6px 0 0;color:var(--muted);font-size:14px;max-width:52ch}
+.reset{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 14px;font-weight:600;font-size:13px;cursor:pointer}
+.reset.armed{border-color:var(--warn);color:var(--warn)}
+
+.tabs{display:flex;gap:4px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:4px;margin-bottom:16px}
+.tabs button{flex:1;min-width:0;border:0;background:transparent;border-radius:8px;padding:10px 6px;font-weight:800;font-size:14px;cursor:pointer;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--on-t)}
+
+/* theory */
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.th{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.th h2{font-family:var(--display);font-weight:800;font-size:24px;margin:0}
+.def{margin:0;font-size:15px}
+.fms{display:flex;flex-wrap:wrap;gap:8px}
+.fm{font-family:var(--display);font-weight:600;font-size:14px;background:var(--surface-2);border-radius:8px;padding:8px 12px}
+.figbox{background:var(--surface-2);border-radius:10px;padding:10px}
+.cap{margin:0;font-size:13.5px;color:var(--muted)}
+.facts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.facts li{font-size:14.5px;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.facts b{display:block;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink);margin-bottom:2px}
+.sec{font-family:var(--display);font-weight:800;font-size:clamp(20px,5vw,26px);margin:28px 0 12px}
+.apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.app{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.app svg{width:40px;height:40px;color:var(--ink);flex:none}
+.app h3{margin:0;font-size:15px;font-weight:800}
+.app p{margin:0;font-size:14px;color:var(--muted)}
+.app .fm{margin-top:auto;font-size:12.5px;align-self:flex-start;padding:6px 10px}
+
+/* game */
+.scorebar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px 10px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.scores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.team{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0;transition:border-color .2s}
+.team .row{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:26px}
+.team .num{font-family:var(--display);font-weight:800;font-size:28px;line-height:1}
+.team .tag{display:none;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:5px;background:currentColor}
+.team .tag span{color:var(--on-t)}
+.team.active .tag{display:inline-block}
+.team .score{display:flex;align-items:baseline;gap:6px;margin-top:6px}
+.team .score b{font-family:var(--display);font-weight:600;font-size:26px;font-variant-numeric:tabular-nums;color:var(--fg)}
+.team .score span{font-size:12px;color:var(--muted)}
+.t1{color:var(--t1)} .t2{color:var(--t2)} .t3{color:var(--t3)}
+.team.active{border-color:currentColor}
+.team.bump{animation:bump .6s ease}
+@keyframes bump{0%{transform:scale(1)}30%{transform:scale(1.06)}100%{transform:scale(1)}}
+.turn{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.turn b{font-weight:800}
+.turn .n1{color:var(--t1)} .turn .n2{color:var(--t2)} .turn .n3{color:var(--t3)}
+
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px;margin-top:12px}
+.cat{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.cat-h{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.cat-h svg{flex:none;width:46px;height:42px;color:var(--ink)}
+.cat-h h2{font-family:var(--display);font-weight:600;font-size:14px;line-height:1.25;margin:0}
+.cat-h p{margin:3px 0 0;font-size:12.5px;color:var(--muted)}
+.cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cell{position:relative;height:54px;border:1.5px solid var(--line);background:var(--surface-2);border-radius:8px;font-family:var(--display);font-weight:600;font-size:18px;cursor:pointer;transition:border-color .15s,transform .15s;font-variant-numeric:tabular-nums}
+.cell:hover{border-color:var(--ink);transform:translateY(-2px)}
+.cell.used{background:transparent;color:var(--muted);text-decoration:line-through;cursor:default;opacity:.7}
+.cell.used:hover{border-color:var(--line);transform:none}
+.dot{position:absolute;right:6px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.dot.d1{background:var(--t1)} .dot.d2{background:var(--t2)} .dot.d3{background:var(--t3)}
+
+.rules{margin-top:16px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.rules summary{cursor:pointer;font-weight:800}
+.rules ol{margin:10px 0 0;padding-left:20px;display:grid;gap:6px;max-width:68ch}
+
+/* shared question pieces */
+.chip{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:5px 9px;border-radius:6px;background:var(--surface-2)}
+.chip.pts{background:var(--ink);color:var(--on-t)}
+.p-head{display:flex;flex-wrap:wrap;gap:8px}
+.q{margin:0;font-family:var(--display);font-weight:600;font-size:clamp(17px,4.6vw,22px);line-height:1.4;text-wrap:pretty}
+.opts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.opts li{border:1.5px solid var(--line);background:var(--surface-2);border-radius:8px;padding:9px 12px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.opts li.ok{border-color:var(--ink);background:var(--ink);color:var(--on-t)}
+.lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.steps{margin:0;padding-left:20px;display:grid;gap:6px;font-size:14px}
+.note{margin:0;border:1.5px dashed var(--warn);border-radius:8px;padding:9px 12px;font-size:13.5px}
+
+/* figures */
+.fig{display:block;width:100%;max-width:340px;height:auto;margin:0 auto}
+.fig .sh{fill:var(--surface-2);stroke:var(--ink);stroke-width:2;stroke-linejoin:round}
+.fig .sh2{fill:var(--ink);fill-opacity:.2;stroke:var(--ink);stroke-width:2;stroke-linejoin:round}
+.fig .ln{stroke:var(--fg);stroke-width:1.6;fill:none;stroke-linecap:round}
+.fig .ds{stroke:var(--muted);stroke-width:1.6;stroke-dasharray:5 4;fill:none}
+.fig .hh{stroke:var(--t2);stroke-width:2.2;fill:none}
+.fig .ml{stroke:var(--t3);stroke-width:2.6;fill:none}
+.fig .ra{stroke:var(--fg);stroke-width:1.3;fill:none}
+.fig text{font-family:var(--body);font-weight:700;font-size:13px;fill:var(--fg)}
+.fig text.v{font-family:var(--display);font-weight:600;font-size:12px}
+.fig text.tm{fill:var(--muted);font-weight:600;font-size:12px}
+.fig text.hl{fill:var(--t2)}
+.fig text.gl{fill:var(--t3)}
+
+/* solutions */
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);margin:0 0 14px}
+.sw{display:inline-block;width:22px;border-top:3px solid var(--ink);vertical-align:middle;margin-right:6px}
+.sw.o{border-color:var(--t2)} .sw.g{border-color:var(--t3)} .sw.d{border-top:2px dashed var(--muted)}
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px}
+.sc{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sc .q{font-size:15px}
+.final{display:flex;gap:10px;align-items:baseline;margin:0;border-top:1px solid var(--line);padding-top:10px}
+.final b{font-family:var(--display);font-weight:600;font-size:17px}
+
+/* modals */
+.overlay{position:fixed;inset:0;z-index:20;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.panel{width:100%;max-width:560px;max-height:100%;overflow:auto;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:14px}
+.panel:focus{outline:none}
+.chip.pts{background:var(--ink);color:var(--on-t)}
+.who{margin:0;font-weight:800;font-size:14px}
+.who.n1{color:var(--t1)} .who.n2{color:var(--t2)} .who.n3{color:var(--t3)}
+.timer{display:grid;gap:8px}
+.track{height:10px;border-radius:6px;background:var(--surface-2);overflow:hidden}
+.fill{height:100%;background:var(--ink);transition:width 1s linear}
+.fill.low{background:var(--warn)}
+.t-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#t-text{font-family:var(--display);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums}
+#t-text.end{color:var(--warn)}
+.ghost{border:1.5px solid var(--line);background:transparent;border-radius:8px;padding:10px 14px;font-weight:600;font-size:14px;cursor:pointer}
+.ghost:hover{border-color:var(--ink)}
+.ghost.wide{width:100%}
+.answer{background:var(--surface-2);border-radius:10px;padding:12px 14px;display:grid;gap:10px}
+.answer .a{font-family:var(--display);font-weight:600;font-size:18px}
+.award{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.aw-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.aw{border:0;border-radius:10px;padding:10px 6px;cursor:pointer;font-family:var(--display);font-weight:800;font-size:26px;line-height:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:currentColor}
+.aw span{color:var(--on-t)}
+.aw small{font-family:var(--body);font-weight:600;font-size:11px;color:var(--on-t)}
+.aw:hover{filter:brightness(1.08)}
+.aw-sub{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.res-title{font-family:var(--display);font-weight:800;font-size:clamp(22px,6vw,30px);margin:0;text-wrap:balance}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.rank li{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface-2)}
+.rank .pl{font-size:12px;font-weight:800;color:var(--muted);width:56px}
+.rank .nm{font-family:var(--display);font-weight:800;font-size:22px;flex:1}
+.rank .sc{font-family:var(--display);font-weight:600;font-size:20px;font-variant-numeric:tabular-nums;color:var(--fg)}
+.rank li.win{border-color:currentColor}
+.res-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.primary{border:0;background:var(--ink);color:var(--on-t);border-radius:8px;padding:11px 14px;font-weight:800;font-size:14px;cursor:pointer}
+
+@media (max-width:420px){
+  .team{padding:8px 9px}
+  .team .num{font-size:24px}
+  .team .score b{font-size:22px}
+  .cell{height:50px;font-size:16px}
+  .opts{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  .team.bump{animation:none}
+  .cell,.fill{transition:none}
+}
+
+/* facts, slogans, group picks */
+.facts3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.fact{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.fact h3{margin:0;font-size:15px;font-weight:800;text-wrap:balance}
+.fact p{margin:0;font-size:14px;color:var(--muted)}
+.fact .figbox{margin-top:auto}
+.slogans{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px;margin-top:10px}
+.slogan{display:flex;gap:10px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:600}
+.slogan b{font-family:var(--display);font-weight:800;font-size:24px;line-height:1;flex:none}
+.slogan span{color:var(--fg)}
+.fig .wall{stroke:var(--fg);stroke-width:5;fill:none}
+.dots{position:absolute;right:5px;top:5px;display:flex;gap:3px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dots i.d1{background:var(--t1)} .dots i.d2{background:var(--t2)} .dots i.d3{background:var(--t3)}
+.hint{margin:0;font-size:13px;color:var(--muted)}
+.picks{display:grid;gap:8px}
+.pk{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface-2)}
+.pk-n{font-family:var(--display);font-weight:800;font-size:22px;line-height:1;width:22px;text-align:center}
+.pk-btns{display:flex;flex-wrap:wrap;gap:6px}
+.pk-btns button{min-width:46px;height:42px;border:1.5px solid var(--line);background:var(--surface);border-radius:8px;font-family:var(--display);font-weight:600;font-size:15px;cursor:pointer;padding:0 12px}
+.pk-btns button:hover:not(:disabled){border-color:currentColor}
+.pk button.on{color:var(--on-t)}
+.pk.t1 button.on{background:var(--t1);border-color:var(--t1)}
+.pk.t2 button.on{background:var(--t2);border-color:var(--t2)}
+.pk.t3 button.on{background:var(--t3);border-color:var(--t3)}
+.pk-btns button:disabled{cursor:default}
+.pk-btns button:disabled:not(.on){opacity:.55}
+.pk-btns button.right{outline:3px solid var(--t3);outline-offset:1px}
+.pk-res{font-family:var(--display);font-weight:600;font-size:15px;min-width:44px;text-align:right}
+.pk-res.gain{color:var(--t3)}
+.pk-res.none{color:var(--muted)}
+.pk.ok{border-color:var(--t3)}
+.sub-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.primary:disabled{opacity:.45;cursor:default}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Ko‘pburchak yuzi</h1>
+      <p>Ko‘pburchaklar yuzi bo‘yicha nazariya, hamma guruh bir vaqtda ishlaydigan 3 guruhli (1, 2, 3) o‘yin va chizmali yechimlar.</p>
+    </div>
+    <button type="button" class="reset" id="reset" hidden>Yangi o‘yin</button>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Bo‘limlar">
+    <button type="button" role="tab" id="tb-theory" aria-controls="tab-theory" aria-selected="true">Nazariya</button>
+    <button type="button" role="tab" id="tb-game" aria-controls="tab-game" aria-selected="false">O‘yin</button>
+    <button type="button" role="tab" id="tb-sol" aria-controls="tab-sol" aria-selected="false">Yechimlar</button>
+  </nav>
+
+  <section id="tab-theory" role="tabpanel" aria-labelledby="tb-theory">
+    <div class="theory">
+      <article class="th">
+        <h2>Romb</h2>
+        <p class="def">Barcha tomonlari teng bo‘lgan parallelogramm romb deyiladi.</p>
+        <div class="fms"><span class="fm">S = a · h</span><span class="fm">S = ½ · d₁ · d₂</span><span class="fm">S = a² · sin α</span></div>
+        <div class="figbox" id="tf-romb"></div>
+        <p class="cap">Romb yuzi uni o‘rab turgan to‘g‘ri to‘rtburchak yuzining aynan yarmi. To‘rtta burchakdagi bo‘sh uchburchaklarning yuzi rombning o‘ziga teng.</p>
+        <ul class="facts">
+          <li><b>Diagonallar</b>Romb diagonallari o‘zaro perpendikulyar, kesishish nuqtasida teng ikkiga bo‘linadi va burchaklarni teng ikkiga bo‘ladi. Shu sababli romb 4 ta teng to‘g‘ri burchakli uchburchakka ajraladi.</li>
+          <li><b>Yuzning chegarasi</b>Tomoni a bo‘lgan rombning yuzi S = a² · sin α ≤ a². Eng katta yuz α = 90° da, ya’ni kvadratda chiqadi. Demak, rombning balandligi hech qachon tomonidan katta bo‘lmaydi.</li>
+          <li><b>Yuzning yarmi</b>d₁ va d₂ tomonli to‘g‘ri to‘rtburchakning yuzi d₁ · d₂ ga teng. Romb uning yarmini egallaydi, shuning uchun S = ½ · d₁ · d₂.</li>
+          <li><b>Nomi</b>“Romb” so‘zi yunoncha rhombos (aylanuvchi narsa) so‘zidan kelib chiqqan.</li>
+        </ul>
+      </article>
+
+      <article class="th">
+        <h2>Trapetsiya</h2>
+        <p class="def">Ikki tomoni parallel (asoslar), qolgan ikki tomoni parallel bo‘lmagan to‘rtburchak trapetsiya deyiladi.</p>
+        <div class="fms"><span class="fm">S = (a + b) / 2 · h</span><span class="fm">S = m · h</span><span class="fm">m = (a + b) / 2</span></div>
+        <div class="figbox" id="tf-trap"></div>
+        <p class="cap">Ikkita bir xil trapetsiyadan asosi a + b, balandligi h bo‘lgan parallelogramm hosil bo‘ladi. Trapetsiya uning yarmini tashkil qiladi.</p>
+        <ul class="facts">
+          <li><b>O‘rta chiziq</b>Yon tomonlarning o‘rtalarini tutashtiruvchi kesma asoslarga parallel va (a + b) / 2 ga teng. Shuning uchun yuz o‘rta chiziq bilan balandlikning ko‘paytmasiga teng.</li>
+          <li><b>Teng yonli trapetsiya</b>Diagonallari teng. Ular o‘zaro perpendikulyar bo‘lsa, balandlik asoslar yig‘indisining yarmiga teng (h = m) va yuz S = h² = d² / 2 bo‘ladi.</li>
+          <li><b>Teng yuzli uchburchaklar</b>Diagonallar trapetsiyani 4 ta uchburchakka bo‘ladi. Yon tomonlarga taqalgan ikkita uchburchakning yuzi o‘zaro teng.</li>
+          <li><b>Nomi</b>“Trapetsiya” so‘zi yunoncha trapeza (stol) so‘zidan olingan.</li>
+        </ul>
+      </article>
+    </div>
+
+    <h2 class="sec">Yuzalar haqida qiziqarli faktlar</h2>
+    <div class="facts3">
+      <article class="fact"><h3>Perimetr bir xil, yuz har xil</h3>
+        <p>Perimetri 20 sm bo‘lgan to‘g‘ri to‘rtburchaklarning yuzi 9, 16, 21 va 25 sm² bo‘lishi mumkin. Eng katta yuz kvadratda chiqadi. Tekislikda perimetri berilgan barcha shakllar ichida eng katta yuz doirada bo‘ladi.</p>
+        <div class="figbox" id="ff-1"></div></article>
+      <article class="fact"><h3>Pifagor teoremasi yuzlar tilida</h3>
+        <p>To‘g‘ri burchakli uchburchakning katetlariga yasalgan kvadratlar yuzlarining yig‘indisi gipotenuzaga yasalgan kvadratning yuziga teng. 3, 4, 5 uchburchakda 9 + 16 = 25.</p>
+        <div class="figbox" id="ff-2"></div></article>
+      <article class="fact"><h3>Tomon 2 marta ortsa, yuz 4 marta ortadi</h3>
+        <p>Tomon 3 marta ortsa, yuz 9 marta ortadi. Jonivor 2 marta kattalashsa, oyog‘ining kesim yuzi 4 marta, vazni esa 8 marta ortadi. Shuning uchun fillarning oyoqlari shunchalik yo‘g‘on.</p>
+        <div class="figbox" id="ff-3"></div></article>
+    </div>
+
+    <h2 class="sec">Hayotda qo‘llanilishi</h2>
+    <div class="apps">
+      <article class="app">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><polygon points="4,30 11,11 29,11 36,30"/><path d="M4 30h32M20 11v19" opacity=".55"/></svg>
+        <h3>Qurilish va ta’mirlash</h3>
+        <p>Tom qiyaliklari va devor qismlari ko‘pincha trapetsiya shaklida bo‘ladi. Romb shaklidagi parket va plitkalar ham keng qo‘llanadi. Yuzni hisoblab, kerakli material va uning narxi aniqlanadi.</p>
+        <span class="fm">S = (a + b) / 2 · h</span>
+      </article>
+      <article class="app">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><polygon points="3,33 37,33 30,8 10,8"/><path d="M12 33l3-25M20 33V8M28 33l-3-25" opacity=".55"/></svg>
+        <h3>Dehqonchilik va yer o‘lchash</h3>
+        <p>To‘g‘ri to‘rtburchak bo‘lmagan dalalar ko‘pincha trapetsiyaga yaqinlashtirib o‘lchanadi. Yuz gektarda topiladi, undan urug‘, o‘g‘it va suv miqdori rejalanadi.</p>
+        <span class="fm">S = m · h</span>
+      </article>
+      <article class="app">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><polygon points="20,4 36,20 20,36 4,20"/><path d="M4 20h32M20 4v32" opacity=".55"/></svg>
+        <h3>Texnika: avtomobil domkrati</h3>
+        <p>Domkrat romb shaklidagi mexanizmdan iborat. Tomonlar o‘zgarmaydi. Vint gorizontal diagonalni qisqartirganda vertikal diagonal uzayadi va yuk ko‘tariladi.</p>
+        <span class="fm">(d₁/2)² + (d₂/2)² = a²</span>
+      </article>
+      <article class="app">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><polygon points="10,3 17,10 10,17 3,10"/><polygon points="30,3 37,10 30,17 23,10"/><polygon points="20,18 27,25 20,32 13,25"/><polygon points="10,23 17,30 10,37 3,30" opacity=".55"/><polygon points="30,23 37,30 30,37 23,30" opacity=".55"/></svg>
+        <h3>Naqsh va dizayn</h3>
+        <p>Atlas va gilam naqshlarida romb shakllari ko‘p uchraydi. Naqsh elementining yuzini bilgan usta kerakli ip, mato va bo‘yoq miqdorini oldindan hisoblaydi.</p>
+        <span class="fm">S = a · h</span>
+      </article>
+    </div>
+  </section>
+
+  <section id="tab-game" role="tabpanel" aria-labelledby="tb-game" hidden>
+    <div class="scorebar">
+      <div class="scores" id="scores"></div>
+      <p class="turn" id="turn"></p>
+    </div>
+    <div class="slogans" id="slogans"></div>
+    <main class="board" id="board"></main>
+    <details class="rules">
+      <summary>O‘yin qoidalari</summary>
+      <ol>
+        <li>Hamma guruh (1, 2, 3) har bir savol ustida bir vaqtda ishlaydi. Savolni istalgan guruh tanlashi mumkin.</li>
+        <li>Variantli savollarda har bir guruh o‘z variantini tanlaydi (A, B, D yoki E). To‘g‘ri variantni tanlagan har bir guruh savol ballini oladi.</li>
+        <li>Hayotiy masalalarda guruhlar yechimni daftarga yozadi. O‘qituvchi to‘liq to‘g‘ri yechimga to‘liq ball, qisman to‘g‘risiga yarim ball beradi.</li>
+        <li>Variantli savolga 60 soniya, hayotiy masalaga 3 daqiqa beriladi. Taymerni o‘qituvchi boshlaydi.</li>
+        <li>Ballar to‘planib boradi. Barcha 14 savol tugagach, eng ko‘p ball to‘plagan guruh g‘olib bo‘ladi.</li>
+      </ol>
+    </details>
+  </section>
+
+  <section id="tab-sol" role="tabpanel" aria-labelledby="tb-sol" hidden>
+    <p class="legend">
+      <span><i class="sw o"></i>balandlik</span>
+      <span><i class="sw g"></i>o‘rta chiziq</span>
+      <span><i class="sw d"></i>yordamchi chiziq</span>
+      <span><i class="sw"></i>shakl</span>
+    </p>
+    <div class="sol-grid" id="sol-list"></div>
+  </section>
+</div>
+
+<div class="overlay" id="modal" hidden>
+  <div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="m-q" tabindex="-1">
+    <div class="p-head"><span class="chip" id="m-cat"></span><span class="chip pts" id="m-pts"></span><span class="chip" id="m-src"></span></div>
+    <p class="q" id="m-q"></p>
+    <ul class="opts" id="m-o"></ul>
+    <p class="hint" id="m-hint"></p>
+    <div class="timer">
+      <div class="track"><div class="fill" id="t-fill" style="width:100%"></div></div>
+      <div class="t-row"><span id="t-text">01:00</span><button type="button" class="ghost" id="t-btn">Taymerni boshlash</button></div>
+    </div>
+    <div class="picks" id="m-picks"></div>
+    <button type="button" class="ghost wide" id="btn-ans">Javobni ko‘rsatish</button>
+    <div class="answer" id="answer" hidden>
+      <p class="lab">Javob</p>
+      <div class="a" id="m-a"></div>
+      <div id="m-sol"></div>
+    </div>
+    <div class="sub-actions">
+      <button type="button" class="primary" id="aw-save" disabled>Ballarni yozish</button>
+      <button type="button" class="ghost" id="aw-back">Orqaga</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="result" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="res-title">
+    <p class="lab">O‘yin yakunlandi</p>
+    <h2 class="res-title" id="res-title"></h2>
+    <p class="cap" id="res-slogan"></p>
+    <ol class="rank" id="rank"></ol>
+    <div class="res-actions">
+      <button type="button" class="ghost" id="res-close">Yopish</button>
+      <button type="button" class="primary" id="res-new">Yangi o‘yin</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* drawing helpers: every figure lives in a 280 x 180 box */
+  function svg(inner){return '<svg class="fig" viewBox="0 0 280 180" role="img" aria-label="Masala chizmasi">'+inner+'</svg>';}
+  function svgH(inner,w,h){return '<svg class="fig" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Chizma">'+inner+'</svg>';}
+  function pl(pts,cls){return '<polygon class="'+cls+'" points="'+pts.map(function(p){return p[0]+','+p[1];}).join(' ')+'"/>';}
+  function ln(a,b,cls){return '<line class="'+cls+'" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'"/>';}
+  function tx(x,y,s,cls,anc){return '<text x="'+x+'" y="'+y+'" class="'+(cls||'')+'" text-anchor="'+(anc||'middle')+'">'+s+'</text>';}
+  function ra(p,u,v,k){k=k||9;var a=[p[0]+u[0]*k,p[1]+u[1]*k],b=[a[0]+v[0]*k,a[1]+v[1]*k],c=[p[0]+v[0]*k,p[1]+v[1]*k];
+    return '<path class="ra" d="M'+a[0]+' '+a[1]+' L'+b[0]+' '+b[1]+' L'+c[0]+' '+c[1]+'"/>';}
+
+  var FIGS={
+    t1:svg(
+      pl([[20,100],[50,100],[50,120],[20,120]],'sh')+
+      pl([[100,30],[220,30],[220,110],[100,110]],'sh2')+
+      tx(35,136,'a')+tx(14,114,'b','','end')+tx(35,154,'S = ab','tm')+
+      tx(160,128,'4a')+tx(228,74,'4b','','start')+tx(160,74,'S = 16ab','v')+
+      tx(74,66,'×4','v')),
+    t3:svg(
+      pl([[15,40],[95,40],[95,104],[15,104]],'sh')+
+      pl([[140,40],[240,40],[240,91],[140,91]],'sh2')+
+      tx(55,121,'a')+tx(9,76,'b','','end')+tx(55,76,'S = ab','v')+
+      tx(190,108,'1,25a')+tx(246,70,'0,8b','','start')+tx(190,70,'S = ab','v')+
+      tx(140,150,'1,25 · 0,8 = 1','tm')),
+    t2:svg(
+      pl([[30,60],[190,60],[190,100],[30,100]],'sh')+
+      tx(110,50,'4x = 4 km')+tx(198,85,'x = 1 km','','start')+tx(110,86,'S = 4 km²','v')+
+      tx(110,132,'P = 2 · (4 + 1) = 10 km','tm')),
+    t4:svg(
+      pl([[40,140],[184,140],[256,76],[112,76]],'sh')+
+      ln([112,76],[120,68],'ds')+
+      ln([112,76],[112,140],'hh')+ln([184,140],[120,68],'hh')+
+      ra([112,140],[0,-1],[-1,0])+ra([120,68],[0.667,0.745],[-0.745,0.667])+
+      tx(112,160,'18')+tx(64,102,'12','','end')+tx(105,114,'8 sm','hl','end')+tx(160,108,'12 sm','hl','start')),
+    t5:svg(
+      pl([[70,95],[166,47],[238,95],[142,143]],'sh')+
+      pl([[70,95],[166,47],[238,95]],'sh2')+
+      ln([70,95],[238,95],'ln')+ln([166,47],[166,95],'hh')+ra([166,95],[0,-1],[-1,0])+
+      tx(60,100,'A','v','end')+tx(166,38,'B','v')+tx(246,100,'C','v','start')+tx(142,160,'D','v')+tx(174,112,'O','v','start')+
+      tx(118,88,'8')+tx(202,88,'6')+tx(174,76,'4','hl','start')),
+    t6:svg(
+      pl([[60,100],[124,35],[204,100],[124,161]],'sh')+
+      ln([60,100],[204,100],'ln')+ln([124,35],[124,161],'ln')+ra([124,100],[1,0],[0,-1])+
+      tx(212,104,'d₁ = 8','','start')+tx(132,28,'d₂ = 7','','start')+tx(124,176,'S = ½ · 7 · 8','tm')),
+    t7:svg(
+      pl([[50,140],[167,140],[227,40],[110,40]],'sh')+
+      ln([110,40],[110,140],'hh')+ra([110,140],[0,-1],[-1,0])+
+      tx(108,158,'a = 5')+tx(116,96,'h','hl','start')+tx(152,100,'S = 40','v')+tx(140,176,'chizma sxematik','tm')),
+    t8:svg(
+      pl([[40,150],[202,150],[160,60],[70,60]],'sh')+
+      ln([70,60],[70,150],'hh')+ra([70,150],[0,-1],[1,0])+
+      tx(115,50,'5')+tx(121,168,'9')+tx(62,108,'h','hl','end')+tx(136,112,'S = 35','v')),
+    t10:svg(
+      pl([[40,150],[220,150],[180,50],[80,50]],'sh')+
+      ln([60,100],[200,100],'ml')+ln([180,50],[180,150],'ds')+ra([180,150],[0,-1],[-1,0])+
+      tx(130,42,'b')+tx(130,168,'a')+tx(130,92,'m','gl')+tx(174,130,'h = 6','hl','end')),
+    t9:svg(
+      pl([[90,150],[234,150],[210,30],[114,30]],'sh')+
+      ln([90,150],[210,30],'ln')+ln([114,30],[234,150],'ln')+ln([162,30],[162,150],'ds')+
+      ra([162,78],[0.707,-0.707],[-0.707,-0.707],10)+
+      ln([40,30],[40,150],'hh')+ln([34,30],[46,30],'hh')+ln([34,150],[46,150],'hh')+
+      tx(48,95,'h = 10','hl','start')+tx(156,60,'4','','end')+tx(156,118,'6','','end')+tx(162,168,'12')+tx(162,22,'8')),
+    t11:svg(
+      pl([[50,150],[100,60],[140,60]],'sh2')+
+      pl([[50,150],[190,150],[140,60],[100,60]],'sh')+
+      pl([[50,150],[100,60],[140,60]],'sh2')+
+      pl([[190,150],[140,60],[230,150]],'sh2')+
+      ln([50,150],[140,60],'ln')+ln([100,60],[190,150],'ln')+
+      ln([140,60],[230,150],'ds')+ln([190,150],[230,150],'ds')+
+      ra([140,60],[-0.707,0.707],[0.707,0.707],10)+
+      tx(240,154,'E','v','start')+tx(96,128,'6')+tx(160,132,'6','','end')+tx(202,102,'6','','start')+
+      tx(140,172,'S = ½ · 6 · 6 = 18','tm')),
+    p1:svg(
+      pl([[40,130],[240,130],[200,50],[80,50]],'sh')+
+      ln([80,50],[80,130],'hh')+ra([80,130],[0,-1],[1,0])+
+      tx(140,42,'30 m')+tx(140,150,'50 m')+tx(86,94,'20 m','hl','start')+tx(160,100,'S = 800 m²','v')),
+    p2:svg(
+      pl([[34,30],[234,30],[234,150],[34,150]],'sh')+
+      pl([[54,70],[94,70],[94,150],[54,150]],'sh2')+
+      pl([[150,62],[210,62],[210,110],[150,110]],'sh2')+
+      tx(134,22,'5 m')+tx(28,94,'3 m','','end')+tx(74,112,'eshik','tm')+tx(74,128,'2×1','tm')+
+      tx(180,84,'deraza','tm')+tx(180,100,'1,5×1,2','tm')+tx(134,172,'S = 15 − 2 − 1,8 = 11,2 m²','tm')),
+    p3:svg(
+      tx(65,34,'1) to‘rt tomon','tm')+tx(190,34,'2) bir tomoni devor','tm')+
+      pl([[40,70],[90,70],[90,120],[40,120]],'sh')+
+      tx(65,138,'10 m')+tx(34,100,'10 m','','end')+tx(65,100,'100 m²','tm')+
+      pl([[140,76],[240,76],[240,126],[140,126]],'sh')+
+      ln([130,76],[250,76],'wall')+tx(190,66,'devor','tm')+
+      tx(190,144,'20 m')+tx(246,104,'10 m','','start')+tx(190,106,'200 m²','tm'))
+  };
+
+  var TFIG={
+    romb:svg(
+      pl([[40,30],[240,30],[240,150],[40,150]],'ds')+
+      pl([[140,30],[240,90],[140,150],[40,90]],'sh')+
+      ln([40,90],[240,90],'ln')+ln([140,30],[140,150],'ln')+ra([140,90],[1,0],[0,-1],8)+
+      tx(192,84,'d₁')+tx(148,62,'d₂','','start')+tx(140,172,'S = ½ · d₁ · d₂','v')),
+    trap:svg(
+      pl([[20,140],[130,140],[110,70],[50,70]],'sh')+
+      pl([[220,70],[190,140],[130,140],[110,70]],'sh2')+
+      ln([110,70],[130,140],'ln')+ln([50,70],[50,140],'hh')+ra([50,140],[0,-1],[1,0])+
+      tx(44,108,'h','hl','end')+tx(75,160,'a')+tx(160,160,'b')+tx(135,58,'a + b')),
+    f1:svgH(
+      tx(125,14,'yuzlar, sm²','tm')+
+      pl([[10,54],[64,54],[64,60],[10,60]],'sh')+
+      pl([[80,48],[128,48],[128,60],[80,60]],'sh')+
+      pl([[144,42],[186,42],[186,60],[144,60]],'sh')+
+      pl([[202,30],[232,30],[232,60],[202,60]],'sh2')+
+      tx(37,78,'9')+tx(104,78,'16')+tx(165,78,'21')+tx(217,78,'25'),250,88),
+    f2:svg(
+      pl([[110,110],[166,110],[166,166],[110,166]],'sh')+
+      pl([[110,68],[110,110],[68,110],[68,68]],'sh')+
+      pl([[110,68],[166,110],[208,54],[152,12]],'sh')+
+      pl([[110,68],[166,110],[110,110]],'sh2')+
+      ra([110,110],[1,0],[0,-1],9)+
+      tx(138,142,'16','v')+tx(89,93,'9','v')+tx(159,64,'25','v')),
+    f3:svgH(
+      pl([[30,70],[48,70],[48,52],[30,52]],'sh')+
+      pl([[80,70],[116,70],[116,34],[80,34]],'sh')+
+      pl([[150,70],[204,70],[204,16],[150,16]],'sh2')+
+      tx(39,65,'1','v')+tx(98,57,'4','v')+tx(177,48,'9','v')+
+      tx(39,88,'tomon 1','tm')+tx(98,88,'tomon 2','tm')+tx(177,88,'tomon 3','tm'),250,98)
+  };
+
+  var CATS=[
+    {title:"To‘g‘ri to‘rtburchak",topic:"Tomonlar va yuz",
+     svg:'<rect x="4" y="8" width="26" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M4 17h26M17 8v18" stroke="currentColor" stroke-width="1" opacity=".5"/>',
+     items:[
+      {p:10,s:"4-test, 1-savol",q:"Agar to‘g‘ri to‘rtburchakning tomonlari 4 marta orttirilsa, uning yuzi necha marta ortadi?",
+       o:["A) 4","B) 8","D) 16","E) 32"],a:"D) 16",fig:FIGS.t1,
+       sol:["Eski tomonlar a va b: S₁ = a · b.","Yangi tomonlar 4a va 4b: S₂ = 4a · 4b = 16ab.","S₂ : S₁ = 16. Yuz 16 marta ortadi."]},
+      {p:20,s:"4-test, 3-savol",q:"To‘g‘ri to‘rtburchakning uzunligi 25% ga orttirildi. Uning yuzi o‘zgarmasligi uchun enini necha foizga kamaytirish kerak?",
+       o:["A) 20%","B) 16%","D) 25%","E) 18%"],a:"A) 20%",fig:FIGS.t3,
+       sol:["Eski yuz: S = a · b.","Uzunlik 25% ortdi: yangi uzunlik 1,25a.","Yuz o‘zgarmasin: 1,25a · x = a · b, bundan x = b : 1,25 = 0,8b.","0,8b = b − 20% · b. En 20% ga kamayadi."]},
+      {p:30,s:"4-test, 2-savol",q:"To‘g‘ri to‘rtburchakning yuzi 400 ga, tomonlarining nisbati 4 : 1 ga teng. Shu to‘g‘ri to‘rtburchakning perimetrini toping.",
+       o:["A) 10 km","B) 5 km","D) 2 km","E) 8 km"],a:"A) 10 km",fig:FIGS.t2,
+       sol:["1 ga = 10 000 m² = 0,01 km². Demak 400 ga = 4 km².","Tomonlar 4x va x: 4x · x = 4, x² = 1, x = 1 km.","Tomonlar 4 km va 1 km. P = 2 · (4 + 1) = 10 km."]}
+    ]},
+    {title:"Parallelogramm",topic:"Balandlik va diagonal",
+     svg:'<polygon points="9,26 32,26 25,8 2,8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" transform="translate(1 2)"/><path d="M26 10v16" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 2" opacity=".6" transform="translate(-4 2)"/>',
+     items:[
+      {p:10,s:"4-test, 4-savol",q:"Yuzi 144 sm², balandliklari 8 sm va 12 sm bo‘lgan parallelogrammning perimetrini toping.",
+       o:["A) 40 sm","B) 30 sm","D) 80 sm","E) 60 sm"],a:"E) 60 sm",fig:FIGS.t4,
+       sol:["S = a · h. Balandligi 8 sm bo‘lgan tomon: a = 144 : 8 = 18 sm.","Balandligi 12 sm bo‘lgan tomon: b = 144 : 12 = 12 sm.","P = 2 · (18 + 12) = 60 sm."]},
+      {p:20,s:"4-test, 5-savol",q:"ABCD parallelogrammning AC diagonaliga BO perpendikulyar tushirilgan. AO = 8, OC = 6 va BO = 4 bo‘lsa, parallelogrammning yuzini toping.",
+       o:["A) 50","B) 28","D) 52","E) 56"],a:"E) 56",fig:FIGS.t5,
+       sol:["AC = AO + OC = 8 + 6 = 14.","BO ABC uchburchakning AC tomoniga tushirilgan balandligi: S(ABC) = ½ · 14 · 4 = 28.","Diagonal parallelogrammni teng ikkita uchburchakka bo‘ladi: S = 2 · 28 = 56."]}
+    ]},
+    {title:"Romb va trapetsiya",topic:"Balandlik va o‘rta chiziq",
+     svg:'<polygon points="9,3 17,15 9,27 1,15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><polygon points="20,27 33,27 29,11 24,11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" transform="translate(-1 0)"/>',
+     items:[
+      {p:10,s:"4-test, 10-savol",q:"Trapetsiyaning yuzi 30 sm², balandligi 6 sm bo‘lsa, uning o‘rta chizig‘i qanchaga teng bo‘ladi?",
+       o:["A) 2,5 sm","B) 5 sm","D) 7,5 sm","E) 4,5 sm"],a:"B) 5 sm",fig:FIGS.t10,
+       sol:["O‘rta chiziq m = (a + b) / 2, yuz S = m · h.","m = S : h = 30 : 6 = 5 sm."]},
+      {p:20,s:"4-test, 8-savol",q:"Asoslari 5 sm va 9 sm ga teng bo‘lgan trapetsiyaning yuzi 35 sm² ga teng. Shu trapetsiyaning balandligini toping.",
+       o:["A) 9 sm","B) 8 sm","D) 5 sm","E) 10 sm"],a:"D) 5 sm",fig:FIGS.t8,
+       sol:["S = (a + b) / 2 · h = (5 + 9) / 2 · h = 7h.","7h = 35, bundan h = 5 sm."]},
+      {p:30,s:"4-test, 7-savol",q:"Rombning yuzi 40 sm² ga, uning perimetri esa 20 sm ga teng. Shu rombning balandligini toping.",
+       o:["A) 2 sm","B) 8 sm","D) 4 sm","E) 16 sm"],a:"B) 8 sm",fig:FIGS.t7,
+       sol:["P = 4a, bundan a = 20 : 4 = 5 sm.","Romb parallelogramm bo‘lgani uchun S = a · h, h = S : a = 40 : 5 = 8 sm.","Test javobi: B) 8 sm."],
+       note:"Tomoni 5 sm bo‘lgan rombning balandligi 5 sm dan oshmaydi va yuzi 25 sm² dan katta bo‘lmaydi. Shartdagi sonlar o‘zaro mos kelmaydi. Perimetr 40 sm bo‘lganda h = 40 : 10 = 4 sm chiqardi. Chizma sxematik."}
+    ]},
+    {title:"Perpendikulyar diagonallar",topic:"To‘rtburchak va teng yonli trapetsiya",
+     svg:'<polygon points="17,3 30,13 17,28 4,13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M17 3v25M4 13h26" stroke="currentColor" stroke-width="1.2" opacity=".6"/>',
+     items:[
+      {p:10,s:"4-test, 6-savol",q:"Qavariq to‘rtburchakning diagonallari o‘zaro perpendikulyar hamda uzunliklari 7 sm va 8 sm ga teng. Shu to‘rtburchakning yuzini toping.",
+       o:["A) 56 sm²","B) 112 sm²","D) 28 sm²","E) 84 sm²"],a:"D) 28 sm²",fig:FIGS.t6,
+       sol:["Perpendikulyar diagonallar to‘rtburchakni 4 ta to‘g‘ri burchakli uchburchakka bo‘ladi. Ularning yuzlari yig‘indisi S = ½ · d₁ · d₂.","S = ½ · 7 · 8 = 28 sm²."]},
+      {p:20,s:"4-test, 11-savol",q:"ABCD teng yonli trapetsiyaning diagonallari o‘zaro perpendikulyar. Agar AC diagonal 6 sm ga teng bo‘lsa, uning yuzini toping.",
+       o:["A) 9 sm²","B) 36 sm²","D) 18 sm²","E) 27 sm²"],a:"D) 18 sm²",fig:FIGS.t11,
+       sol:["Teng yonli trapetsiyada diagonallar teng: BD = AC = 6 sm.","C nuqtadan BD ga parallel chiziq o‘tkazamiz. U AD ning davomini E nuqtada kesadi. Shunda DE = BC va CE = BD = 6.","CE ∥ BD va AC ⟂ BD bo‘lgani uchun ACE to‘g‘ri burchakli teng yonli uchburchak.","ABC va CDE uchburchaklarning yuzi teng (asoslari BC = DE, balandligi umumiy). Demak, trapetsiyaning yuzi ACE uchburchakning yuziga teng: S = ½ · 6 · 6 = 18 sm²."]},
+      {p:30,s:"4-test, 9-savol",q:"Asoslari 8 va 12 ga teng bo‘lgan teng yonli trapetsiyaning diagonallari o‘zaro perpendikulyar. Trapetsiyaning yuzini toping.",
+       o:["A) 100","B) 64","D) 144","E) 76"],a:"A) 100",fig:FIGS.t9,
+       sol:["Diagonallar O nuqtada kesishadi. Teng yonli trapetsiyada AOD va BOC uchburchaklar teng yonli, ikkalasida O dagi burchak 90°.","O dan asoslarga tushirilgan balandliklar asosning yarmiga teng: 12 : 2 = 6 va 8 : 2 = 4.","h = 6 + 4 = 10, ya’ni h = (8 + 12) / 2.","S = (8 + 12) / 2 · 10 = 100."]}
+    ]},
+    {title:"Hayotiy muammolar",topic:"Fikrlab ishlanadigan masalalar",
+     svg:'<polygon points="4,16 17,4 30,16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><rect x="8" y="16" width="18" height="11" fill="none" stroke="currentColor" stroke-width="2.4"/>',
+     items:[
+      {p:40,t:180,s:"Hayotiy masala",q:"Trapetsiya shaklidagi uchastkaning asoslari 30 m va 50 m, ular orasidagi masofa 20 m. Uchastka necha sotix (1 sotix = 100 m²)? Har bir mevali ko‘chat uchun 4 m² joy kerak bo‘lsa, taxminan nechta ko‘chat o‘tqazish mumkin?",
+       a:"800 m² = 8 sotix. Taxminan 200 ta ko‘chat.",fig:FIGS.p1,
+       sol:["Trapetsiya yuzi: S = (a + b) / 2 · h = (30 + 50) / 2 · 20 = 800 m².","1 sotix = 100 m², demak 800 : 100 = 8 sotix.","Har bir ko‘chatga 4 m²: 800 : 4 = 200 ta.","Uchastka chetlarida bir oz joy yo‘qoladi, shuning uchun amalda ko‘chat soni 200 dan sal kam bo‘ladi."]},
+      {p:50,t:180,s:"Hayotiy masala",q:"Devor 5 m uzun va 3 m baland. Unda 2 m × 1 m eshik va 1,5 m × 1,2 m deraza bor. Bo‘yoqning 1 litri 8 m² ga yetadi. Devor 2 qavat bo‘yaladi. Necha litr bo‘yoq kerak? Do‘konda bo‘yoq faqat butun litrlarda sotiladi.",
+       a:"3 litr (hisob bo‘yicha 2,8 litr).",fig:FIGS.p2,
+       sol:["Devor yuzi: 5 · 3 = 15 m².","Eshik: 2 · 1 = 2 m². Deraza: 1,5 · 1,2 = 1,8 m². Bo‘yaladigan yuz: 15 − 2 − 1,8 = 11,2 m².","2 qavat bo‘yaladi: 11,2 · 2 = 22,4 m².","22,4 : 8 = 2,8 litr. Bo‘yoq butun litrda sotilgani uchun 3 litr olish kerak."]},
+      {p:60,t:180,s:"Hayotiy masala",q:"Dehqonning 40 m uzunlikdagi to‘siq simi bor. U to‘g‘ri to‘rtburchak shaklidagi bog‘ni o‘ramoqchi. 1) To‘rt tomonni ham o‘rasa, eng katta yuz qancha bo‘ladi? 2) Bir tomoni devor bo‘lib, simdan faqat uch tomonga foydalansa-chi? Tomonlarni toping.",
+       a:"1) 10 m × 10 m, 100 m². 2) 10 m × 20 m, 200 m².",fig:FIGS.p3,
+       sol:["Yarim perimetr 20 m. Tomonlar (m): 1 × 19 = 19, 5 × 15 = 75, 8 × 12 = 96, 10 × 10 = 100. Eng katta yuz kvadratda: 100 m².","Devor yonida bo‘lsa, sim 2x + y = 40 (x devorga perpendikulyar tomon, y devorga parallel tomon). Yuz S = x · y = x · (40 − 2x).","x = 5: y = 30, S = 150. x = 8: y = 24, S = 192. x = 10: y = 20, S = 200. x = 12: y = 16, S = 192. x = 15: y = 10, S = 150.","Eng katta yuz x = 10, y = 20 da: 200 m². Devordan foydalanish yuzni 2 marta oshirdi."]}
+    ]}
+  ];
+
+  var KEY='kopburchak-yuzi-v1';
+  var SLOGANS=[
+    "Matematika — aql kaliti: fikrlasak, yutamiz!",
+    "Aniq hisob, tez fikr — g‘alaba bizniki!",
+    "Har bir masala — yangi cho‘qqi sari qadam!"
+  ];
+  var S={scores:[0,0,0],done:{}};
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw){var o=JSON.parse(raw); if(o&&o.scores&&o.scores.length===3&&o.done&&typeof o.done==='object'){S=o;}}
+  }catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+  function $(id){return document.getElementById(id);}
+  var TOTAL=CATS.reduce(function(n,c){return n+c.items.length;},0);
+  function doneCount(){return Object.keys(S.done).length;}
+  var cur=null,picks=[null,null,null],revealed=false;
+
+  /* shared renderers */
+  function optsHTML(it,showOk){
+    if(!it.o)return '';
+    return '<ul class="opts">'+it.o.map(function(t){return '<li'+(showOk&&t===it.a?' class="ok"':'')+'>'+t+'</li>';}).join('')+'</ul>';
+  }
+  function solBody(it){
+    var h=it.fig+'<ol class="steps">'+it.sol.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol>';
+    if(it.note){h+='<p class="note"><b>Eslatma.</b> '+it.note+'</p>';}
+    return h;
+  }
+  function renderSol(){
+    var h='';
+    CATS.forEach(function(c){
+      c.items.forEach(function(it){
+        h+='<article class="sc"><div class="p-head"><span class="chip">'+it.s+'</span><span class="chip">'+c.title+'</span></div>'+
+          '<p class="q">'+it.q+'</p>'+optsHTML(it,true)+solBody(it)+
+          '<p class="final"><span class="lab">Javob</span><b>'+it.a+'</b></p></article>';
+      });
+    });
+    $('sol-list').innerHTML=h;
+  }
+
+  function renderScores(){
+    var fin=doneCount()>=TOTAL, mx=Math.max.apply(null,S.scores), h='';
+    for(var i=0;i<3;i++){
+      var lead=(mx>0&&S.scores[i]===mx);
+      h+='<div class="team t'+(i+1)+(lead?' active':'')+'" id="team'+i+'">'+
+        '<div class="row"><span class="num">'+(i+1)+'</span><span class="tag"><span>'+(fin?'G‘olib':'Yetakchi')+'</span></span></div>'+
+        '<div class="score"><b>'+S.scores[i]+'</b><span>ball</span></div></div>';
+    }
+    $('scores').innerHTML=h;
+    $('turn').textContent=fin?'O‘yin yakunlandi. Barcha savollar tugadi.':
+      'Hamma guruh bir vaqtda javob beradi · '+(TOTAL-doneCount())+' ta savol qoldi';
+  }
+  function renderSlogans(){
+    $('slogans').innerHTML=SLOGANS.map(function(t,i){return '<div class="slogan t'+(i+1)+'"><b>'+(i+1)+'</b><span>'+t+'</span></div>';}).join('');
+  }
+
+  function renderBoard(){
+    var h='';
+    CATS.forEach(function(c,ci){
+      h+='<section class="cat"><div class="cat-h"><svg viewBox="0 0 34 30" aria-hidden="true">'+c.svg+'</svg><div><h2>'+c.title+'</h2><p>'+c.topic+'</p></div></div><div class="cells">';
+      c.items.forEach(function(it,ri){
+        var d=S.done[ci+'-'+ri], used=Array.isArray(d), dots='';
+        if(used){dots='<span class="dots">'+d.map(function(g,gi){return g>0?'<i class="d'+(gi+1)+'"></i>':'';}).join('')+'</span>';}
+        h+='<button type="button" class="cell'+(used?' used':'')+'" data-ci="'+ci+'" data-ri="'+ri+'" aria-label="'+c.title+', '+it.p+' ball'+(used?', tugagan':'')+'"'+(used?' disabled':'')+'>'+it.p+dots+'</button>';
+      });
+      h+='</div></section>';
+    });
+    $('board').innerHTML=h;
+  }
+  function renderAll(){renderScores();renderBoard();}
+
+  /* timer */
+  var T=60,left=T,iv=null;
+  function fmt(s){return '0'+Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}
+  function drawTimer(){
+    $('t-text').textContent=fmt(left);
+    $('t-text').className=left===0?'end':'';
+    var f=$('t-fill'); f.style.width=(left/T*100)+'%'; f.className='fill'+(left<=10?' low':'');
+    $('t-btn').textContent=iv?'To‘xtatish':(left===T?'Taymerni boshlash':(left===0?'Qayta boshlash':'Davom ettirish'));
+  }
+  function stopT(){if(iv){clearInterval(iv);iv=null;}}
+  function toggleT(){
+    if(iv){stopT();}
+    else{
+      if(left===0)left=T;
+      iv=setInterval(function(){left--;if(left<=0){left=0;stopT();}drawTimer();},1000);
+    }
+    drawTimer();
+  }
+  function resetTimer(){stopT();left=T;drawTimer();}
+
+  /* group picks */
+  function gain(g){
+    var it=cur.it,v=picks[g];
+    if(v===null)return 0;
+    if(cur.mcq)return v===it.a.charAt(0)?it.p:0;
+    return Math.round(parseFloat(v)*it.p);
+  }
+  function buildPicks(){
+    var it=cur.it,h='';
+    for(var g=0;g<3;g++){
+      h+='<div class="pk t'+(g+1)+'"><span class="pk-n">'+(g+1)+'</span><div class="pk-btns">';
+      if(cur.mcq){
+        it.o.forEach(function(opt){var L=opt.charAt(0);h+='<button type="button" data-g="'+g+'" data-v="'+L+'" aria-label="'+(g+1)+'-guruh, '+L+' variant">'+L+'</button>';});
+      }else{
+        [['0','0'],['0.5','½'],['1','To‘liq']].forEach(function(q){h+='<button type="button" data-g="'+g+'" data-v="'+q[0]+'" aria-label="'+(g+1)+'-guruh: '+q[1]+'">'+q[1]+'</button>';});
+      }
+      h+='</div><span class="pk-res" id="pr'+g+'"></span></div>';
+    }
+    $('m-picks').innerHTML=h;
+  }
+  function updatePicks(){
+    document.querySelectorAll('#m-picks .pk-btns button').forEach(function(b){
+      var g=+b.getAttribute('data-g'),v=b.getAttribute('data-v');
+      b.classList.toggle('on',picks[g]!==null&&String(picks[g])===v);
+      b.disabled=revealed&&cur.mcq;
+      b.classList.toggle('right',revealed&&cur.mcq&&v===cur.it.a.charAt(0));
+    });
+    for(var g=0;g<3;g++){
+      var r=$('pr'+g),x=gain(g);
+      if(revealed){r.textContent=x>0?'+'+x:'0';r.className='pk-res '+(x>0?'gain':'none');}
+      else{r.textContent='';r.className='pk-res';}
+      r.parentNode.classList.toggle('ok',revealed&&x>0);
+    }
+  }
+
+  /* question sheet */
+  function openQ(ci,ri){
+    var c=CATS[ci],it=c.items[ri];
+    cur={ci:ci,ri:ri,it:it,mcq:!!it.o};
+    picks=[null,null,null];revealed=false;
+    T=it.t||60;
+    $('m-cat').textContent=c.title;
+    $('m-pts').textContent=it.p+' ball';
+    $('m-src').textContent=it.s;
+    $('m-q').textContent=it.q;
+    if(cur.mcq){
+      $('m-o').hidden=false;
+      $('m-o').innerHTML=it.o.map(function(t){return '<li>'+t+'</li>';}).join('');
+      $('m-hint').textContent='Har bir guruh o‘z variantini tanlaydi. To‘g‘ri variantni tanlagan har bir guruh '+it.p+' ball oladi.';
+    }else{
+      $('m-o').hidden=true;$('m-o').innerHTML='';
+      $('m-hint').textContent='Guruhlar yechimni daftarga yozadi. Javobdan keyin har bir guruhga baho qo‘yiladi: to‘liq ('+it.p+' ball), qisman ('+(it.p/2)+' ball) yoki 0.';
+    }
+    $('m-a').textContent=it.a;
+    $('m-sol').innerHTML=solBody(it);
+    $('answer').hidden=true;
+    $('btn-ans').hidden=false;
+    $('aw-save').disabled=true;
+    buildPicks();updatePicks();
+    resetTimer();
+    $('modal').hidden=false;
+    document.body.classList.add('lock');
+    $('panel').scrollTop=0;
+    $('panel').focus();
+  }
+  function closeQ(){
+    stopT();
+    $('modal').hidden=true;
+    document.body.classList.remove('lock');
+    cur=null;
+  }
+  function bump(i){
+    var el=$('team'+i); if(!el)return;
+    el.classList.add('bump');
+    setTimeout(function(){el.classList.remove('bump');},700);
+  }
+  function reveal(){
+    if(!cur||revealed)return;
+    revealed=true;stopT();
+    $('answer').hidden=false;
+    $('btn-ans').hidden=true;
+    document.querySelectorAll('#m-o li').forEach(function(li){li.classList.toggle('ok',li.textContent===cur.it.a);});
+    updatePicks();
+    $('aw-save').disabled=false;
+    $('answer').scrollIntoView({block:'nearest'});
+  }
+  function commit(){
+    if(!cur||!revealed)return;
+    var gained=[0,1,2].map(gain);
+    S.done[cur.ci+'-'+cur.ri]=gained;
+    for(var g=0;g<3;g++){S.scores[g]+=gained[g];}
+    save();
+    closeQ();
+    renderAll();
+    gained.forEach(function(x,g){if(x>0)bump(g);});
+    if(doneCount()>=TOTAL)showResult();
+  }
+
+  /* result */
+  function showResult(){
+    var order=[0,1,2].sort(function(a,b){return S.scores[b]-S.scores[a];});
+    var top=S.scores[order[0]];
+    var winners=order.filter(function(i){return S.scores[i]===top;});
+    $('res-title').textContent=winners.length===1?(winners[0]+1)+'-guruh g‘olib!':'Durang: '+winners.map(function(i){return (i+1)+'-guruh';}).join(', ');
+    $('res-slogan').textContent=winners.length===1?'“'+SLOGANS[winners[0]]+'”':'';
+    var h='',place=0;
+    order.forEach(function(i,idx){
+      if(idx===0||S.scores[i]!==S.scores[order[idx-1]])place=idx+1;
+      h+='<li class="t'+(i+1)+(S.scores[i]===top?' win':'')+'"><span class="pl">'+place+'-o‘rin</span><span class="nm">'+(i+1)+'-guruh</span><span class="sc">'+S.scores[i]+' ball</span></li>';
+    });
+    $('rank').innerHTML=h;
+    $('result').hidden=false;
+    document.body.classList.add('lock');
+  }
+  function hideResult(){$('result').hidden=true;document.body.classList.remove('lock');}
+  function newGame(){
+    S={scores:[0,0,0],done:{}};
+    save();hideResult();closeQ();renderAll();
+  }
+
+  /* events */
+  $('board').addEventListener('click',function(e){
+    var b=e.target.closest('.cell'); if(!b||b.disabled)return;
+    openQ(+b.getAttribute('data-ci'),+b.getAttribute('data-ri'));
+  });
+  $('m-picks').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b||b.disabled||!cur)return;
+    var g=+b.getAttribute('data-g'),v=b.getAttribute('data-v');
+    if(cur.mcq){picks[g]=(picks[g]===v)?null:v;}else{picks[g]=v;}
+    updatePicks();
+  });
+  $('t-btn').addEventListener('click',toggleT);
+  $('btn-ans').addEventListener('click',reveal);
+  $('aw-save').addEventListener('click',commit);
+  $('aw-back').addEventListener('click',closeQ);
+  $('res-close').addEventListener('click',hideResult);
+  $('res-new').addEventListener('click',newGame);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){
+      if(!$('result').hidden)hideResult();
+      else if(!$('modal').hidden)closeQ();
+    }
+  });
+
+  var armed=false,armTimer=null,rb=$('reset');
+  function disarm(){armed=false;rb.textContent='Yangi o‘yin';rb.classList.remove('armed');clearTimeout(armTimer);}
+  rb.addEventListener('click',function(){
+    if(!armed){
+      armed=true;rb.textContent='Tasdiqlang: ballar o‘chadi';rb.classList.add('armed');
+      armTimer=setTimeout(disarm,3500);
+    }else{disarm();newGame();}
+  });
+
+  /* tabs */
+  var TABS=['theory','game','sol'];
+  function showTab(n){
+    TABS.forEach(function(t){
+      $('tab-'+t).hidden=(t!==n);
+      $('tb-'+t).setAttribute('aria-selected',t===n?'true':'false');
+    });
+    rb.hidden=(n!=='game');
+    try{localStorage.setItem(KEY+'-tab',n);}catch(e){}
+  }
+  TABS.forEach(function(t){$('tb-'+t).addEventListener('click',function(){showTab(t);});});
+
+  $('tf-romb').innerHTML=TFIG.romb;
+  $('tf-trap').innerHTML=TFIG.trap;
+  $('ff-1').innerHTML=TFIG.f1;
+  $('ff-2').innerHTML=TFIG.f2;
+  $('ff-3').innerHTML=TFIG.f3;
+  renderSlogans();
+  renderAll();
+  renderSol();
+  drawTimer();
+  var start='theory';
+  try{var st=localStorage.getItem(KEY+'-tab'); if(TABS.indexOf(st)>=0)start=st;}catch(e){}
+  showTab(start);
+  if(doneCount()>=TOTAL)showResult();
+})();
+</script>
+
+</body></html>
